@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.mszalek.pokesStopTimer.MainView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/compacted_view"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/poke_stop" />
+
+    <LinearLayout
+        android:background="@color/grayish_transparent"
+        android:visibility="gone"
+        android:id="@+id/expanded_view"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/tv_time_left"
+            android:padding="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:text="4:28"
+            android:textSize="40sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/refresh_button"
+            android:padding="5dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="fitXY"
+            android:background="@null"
+            android:src="@drawable/poke_stop" />
+    </LinearLayout>
+</com.mszalek.pokesStopTimer.MainView>
