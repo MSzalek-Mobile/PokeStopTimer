@@ -16,23 +16,32 @@ import android.widget.TextView;
 /**
  * Created by Marcinus on 2016-08-07.
  */
-public class MainView extends FrameLayout implements CustomTimer.TimerListener {
+public class MainView extends FrameLayout {
 
     private TextView tvTimeLeft;
     private ImageView mCompactedView;
     private ImageButton mRefreshButton;
     private View mExpandedView;
-
-    private CustomTimer mTimer = new CustomTimer(this);
+    private MainViewListener mListener;
 
     private boolean isExpanded;
 
-    public MainView(Context context) {
-        super(context);
-    }
-
+    /**
+     *
+     * @param context must implement MainViewListener
+     */
     public MainView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mListener = (MainViewListener) context;
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        tvTimeLeft = (TextView) findViewById(R.id.tv_time_left);
+        mCompactedView = (ImageView) findViewById(R.id.compacted_view);
+        mRefreshButton = (ImageButton) findViewById(R.id.refresh_button);
+        mExpandedView = findViewById(R.id.expanded_view);
     }
 
     public void updateTimeLeft(long timeLeft) {
@@ -51,21 +60,12 @@ public class MainView extends FrameLayout implements CustomTimer.TimerListener {
         updateTimeLeft(totalWaitingTime);
         animateRefreshButton();
         mCompactedView.setEnabled(false);
-        mTimer.startCountDown(totalWaitingTime, interval);
-    }
-
-    private void animateRefreshButton() {
-        ObjectAnimator anim = (ObjectAnimator) AnimatorInflater.loadAnimator(getContext(), R.animator.anim_flip);
-        anim.setTarget(mRefreshButton);
-        anim.addListener(new MyAnimatorListener());
-        anim.start();
     }
 
     public void onTimerEnded() {
         mCompactedView.setEnabled(true);
         mRefreshButton.setEnabled(true);
         updateTimeLeft(0);
-        Utils.playSoundWithVibration(getContext(), R.raw.pikachu);
     }
 
     public void setExpanded(boolean expanded) {
@@ -73,23 +73,13 @@ public class MainView extends FrameLayout implements CustomTimer.TimerListener {
         if (isExpanded) {
             mCompactedView.setVisibility(GONE);
             mExpandedView.setVisibility(VISIBLE);
-            updateTimeLeft(mTimer.getTimeRemaining());
+            updateTimeLeft(mListener.getRemainingTime());
         } else {
             mCompactedView.setVisibility(VISIBLE);
             mExpandedView.setVisibility(GONE);
         }
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        tvTimeLeft = (TextView) findViewById(R.id.tv_time_left);
-        mCompactedView = (ImageView) findViewById(R.id.compacted_view);
-        mRefreshButton = (ImageButton) findViewById(R.id.refresh_button);
-        mExpandedView = findViewById(R.id.expanded_view);
-    }
-
-    @Override
     public void onTick(long timeLeft) {
         if (timeLeft > 0) {
             if (isExpanded) {
@@ -98,6 +88,25 @@ public class MainView extends FrameLayout implements CustomTimer.TimerListener {
         } else {
             onTimerEnded();
         }
+    }
+
+    //
+    // MainViewListener
+    //
+
+    public interface MainViewListener {
+        long getRemainingTime();
+    }
+
+    //
+    // ANIMATION
+    //
+
+    private void animateRefreshButton() {
+        ObjectAnimator anim = (ObjectAnimator) AnimatorInflater.loadAnimator(getContext(), R.animator.anim_flip);
+        anim.setTarget(mRefreshButton);
+        anim.addListener(new MyAnimatorListener());
+        anim.start();
     }
 
     private class MyAnimatorListener implements Animator.AnimatorListener {

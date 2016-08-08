@@ -37,5 +37,14 @@
             android:scaleType="fitXY"
             android:background="@null"
             android:src="@drawable/poke_stop" />
+
+        <Button
+            android:layout_marginTop="10dp"
+            android:drawableEnd="@drawable/ic_logout"
+            android:text="EXIT"
+            android:id="@+id/btn_exit"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="100dp"
+            android:layout_height="50dp" />
     </LinearLayout>
 </com.mszalek.pokesStopTimer.MainView>

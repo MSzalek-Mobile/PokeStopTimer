@@ -14,16 +14,22 @@ import android.view.WindowManager;
 /**
  * Created by Marcinus on 2016-08-07.
  */
-public class ChatHeadService extends Service implements View.OnTouchListener {
+public class MainService extends Service implements View.OnTouchListener, CustomTimer.TimerListener, MainView.MainViewListener{
 
     private WindowManager windowManager;
     private MainView mMainView;
+    private CustomTimer mTimer = new CustomTimer(this);
     private boolean isMoving;
+
+    private int mPrevDragX;
+    private int mPrevDragY;
+    private WindowManager.LayoutParams mRootLayoutParams;
 
     private final long TOTAL_WAITING_TIME = 5 * 60 * 1000; //5 miuntes
 
     private void resetTimer() {
         mMainView.resetTimer(TOTAL_WAITING_TIME, 1000);
+        mTimer.startCountDown(TOTAL_WAITING_TIME, 1000);
     }
 
     @Override
@@ -41,6 +47,7 @@ public class ChatHeadService extends Service implements View.OnTouchListener {
         mMainView = (MainView) LayoutInflater.from(this).inflate(R.layout.main_view, null);
         mMainView.setOnTouchListener(this);
         mMainView.findViewById(R.id.refresh_button).setOnTouchListener(this);
+        mMainView.findViewById(R.id.btn_exit).setOnTouchListener(this);
 
         mRootLayoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -70,10 +77,15 @@ public class ChatHeadService extends Service implements View.OnTouchListener {
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction() == MotionEvent.ACTION_UP && !isMoving) {
-            if (view.getId() == R.id.refresh_button) {
-                resetTimer();
-            } else {
-                mMainView.toggleExpanded();
+            switch (view.getId()) {
+                case R.id.refresh_button:
+                    resetTimer();
+                    break;
+                case R.id.btn_exit:
+                    stopSelf();
+                    break;
+                default:
+                    mMainView.toggleExpanded();
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE) {
             if (mMainView.isExpanded()) {
@@ -83,10 +95,6 @@ public class ChatHeadService extends Service implements View.OnTouchListener {
         dragTray(motionEvent.getAction(), (int)motionEvent.getRawX(), (int)motionEvent.getRawY());
         return true;
     }
-
-    private int mPrevDragX;
-    private int mPrevDragY;
-    private WindowManager.LayoutParams mRootLayoutParams;
 
     // Drags the tray as per touch info
     private void dragTray(int action, int x, int y){
@@ -113,5 +121,26 @@ public class ChatHeadService extends Service implements View.OnTouchListener {
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
+    }
+
+    //
+    // CustomTimer.TimerListener
+    //
+
+    @Override
+    public void onTick(long timeLeft) {
+        mMainView.onTick(timeLeft);
+        if (timeLeft <= 0) {
+            Utils.playSoundWithVibration(this, R.raw.pikachu);
+        }
+    }
+
+    //
+    // MainView.MainViewListener
+    //
+
+    @Override
+    public long getRemainingTime() {
+        return mTimer.getTimeRemaining();
     }
 }
